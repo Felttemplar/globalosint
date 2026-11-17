@@ -13,11 +13,14 @@ Fundação para uma plataforma de inteligência de fontes abertas, com rastreabi
 python -m globalosint.cli init-db
 python -m globalosint.cli source add --name "OMS" --url "https://www.who.int/" --kind institutional --languages en,fr --axes health
 python -m globalosint.cli source list
+python -m globalosint.cli dashboard
 ```
 
 Execute os comandos a partir da pasta `src` ou instale o projeto com `python -m pip install -e .`.
 
 O banco SQLite padrão fica em `data/globalosint.sqlite3`. Defina `GLOBALOSINT_DB_PATH` para usar outro caminho. O banco e a pasta de dados não são versionados.
+
+O dashboard abre em `http://127.0.0.1:8765`, lê o banco local e não oferece rotas para alterar dados. Use `--host` ou `--port` para ajustar o endereço.
 
 ## Estado atual
 

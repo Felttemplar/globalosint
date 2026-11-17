@@ -3,6 +3,7 @@
 import argparse
 
 from globalosint.database import connect, initialize
+from globalosint.dashboard import serve
 from globalosint.models import SourceInput, SourceKind
 from globalosint.registry import add_source, list_sources
 
@@ -21,6 +22,9 @@ def _parser() -> argparse.ArgumentParser:
     add.add_argument("--axes", default="")
     add.add_argument("--notes")
     source_commands.add_parser("list", help="Lista fontes cadastradas")
+    dashboard = commands.add_parser("dashboard", help="Abre o painel local somente leitura")
+    dashboard.add_argument("--host", default="127.0.0.1")
+    dashboard.add_argument("--port", type=int, default=8765)
     return parser
 
 
@@ -28,6 +32,8 @@ def main() -> None:
     args = _parser().parse_args()
     if args.command == "init-db":
         print(f"Banco inicializado: {initialize()}")
+    elif args.command == "dashboard":
+        serve(host=args.host, port=args.port)
     elif args.command == "source" and args.source_command == "add":
         with connect() as connection:
             item = add_source(connection, SourceInput(
