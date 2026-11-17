@@ -4,6 +4,7 @@ import argparse
 
 from globalosint.database import connect, initialize
 from globalosint.dashboard import serve
+from globalosint.freshrss import sync_from_environment
 from globalosint.models import SourceInput, SourceKind
 from globalosint.registry import add_source, list_sources
 
@@ -25,6 +26,9 @@ def _parser() -> argparse.ArgumentParser:
     dashboard = commands.add_parser("dashboard", help="Abre o painel local somente leitura")
     dashboard.add_argument("--host", default="127.0.0.1")
     dashboard.add_argument("--port", type=int, default=8765)
+    freshrss = commands.add_parser("freshrss-sync", help="Importa novos artigos do FreshRSS")
+    freshrss.add_argument("--max-items", type=int, default=500)
+    freshrss.add_argument("--since-hours", type=int, default=24)
     return parser
 
 
@@ -34,6 +38,13 @@ def main() -> None:
         print(f"Banco inicializado: {initialize()}")
     elif args.command == "dashboard":
         serve(host=args.host, port=args.port)
+    elif args.command == "freshrss-sync":
+        result = sync_from_environment(max_items=args.max_items, since_hours=args.since_hours)
+        print(
+            f"Execução {result['run_id']}: {result['imported']} novos, "
+            f"{result['duplicates']} duplicados, {result['skipped']} ignorados "
+            f"({result['records_seen']} recebidos)."
+        )
     elif args.command == "source" and args.source_command == "add":
         with connect() as connection:
             item = add_source(connection, SourceInput(

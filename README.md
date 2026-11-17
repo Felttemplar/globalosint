@@ -22,6 +22,21 @@ O banco SQLite padrão fica em `data/globalosint.sqlite3`. Defina `GLOBALOSINT_D
 
 O dashboard abre em `http://127.0.0.1:8765`, lê o banco local e não oferece rotas para alterar dados. Use `--host` ou `--port` para ajustar o endereço.
 
+## Integração com FreshRSS
+
+O coletor consulta a API compatível com Google Reader do FreshRSS em modo somente leitura, importa artigos publicados na janela configurada e salva cada publicação como uma observação `unreviewed`. Assinaturas novas aparecem como fontes `candidate`; nenhum artigo é promovido automaticamente a evento ou fato. A API e o endpoint de conteúdo são descritos na [documentação oficial do FreshRSS](https://freshrss.github.io/FreshRSS/en/developers/06_GoogleReader_API.html).
+
+No FreshRSS, habilite o acesso externo via API e crie/redefina a senha específica da API. Configure a URL completa fornecida pelo FreshRSS (terminada em `/api/greader.php`) e as credenciais no ambiente, sem colocá-las no Git:
+
+```powershell
+$env:FRESHRSS_API_URL = "https://rss.example.org/api/greader.php"
+$env:FRESHRSS_USERNAME = "seu-usuario"
+$env:FRESHRSS_PASSWORD = "senha-especifica-da-api"
+python -m globalosint.cli freshrss-sync --since-hours 24 --max-items 500
+```
+
+O coletor usa HTTPS fora de localhost, pagina até o limite configurado, deduplica por fonte e ID externo, registra falhas e mantém a origem rastreável. Ele lê os artigos que o FreshRSS já buscou; a atualização periódica dos feeds continua a cargo do FreshRSS. Não há instância FreshRSS nem credenciais configuradas neste repositório, então a conexão real depende da configuração acima.
+
 ## Estado atual
 
 - SQLite com tabelas para fontes, eventos, evidências, vínculos entre fontes e eventos, histórico e execuções de coleta.

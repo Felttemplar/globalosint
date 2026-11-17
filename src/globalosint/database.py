@@ -46,6 +46,21 @@ CREATE TABLE IF NOT EXISTS evidence (
     assessment TEXT NOT NULL DEFAULT 'unassessed' CHECK (assessment IN ('supporting','contradicting','unassessed')),
     UNIQUE(event_id, url)
 );
+CREATE TABLE IF NOT EXISTS source_items (
+    id INTEGER PRIMARY KEY,
+    source_id INTEGER NOT NULL REFERENCES sources(id),
+    external_id TEXT NOT NULL,
+    url TEXT NOT NULL,
+    title TEXT NOT NULL,
+    summary TEXT,
+    published_at TEXT,
+    collected_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
+    content_hash TEXT NOT NULL,
+    origin_group TEXT,
+    review_status TEXT NOT NULL DEFAULT 'unreviewed' CHECK (review_status IN ('unreviewed','promoted','ignored')),
+    UNIQUE(source_id, external_id),
+    UNIQUE(source_id, url)
+);
 CREATE TABLE IF NOT EXISTS event_history (
     id INTEGER PRIMARY KEY,
     event_id TEXT NOT NULL REFERENCES events(id),
@@ -68,6 +83,8 @@ CREATE INDEX IF NOT EXISTS idx_sources_status ON sources(status);
 CREATE INDEX IF NOT EXISTS idx_events_axis_status ON events(axis, status);
 CREATE INDEX IF NOT EXISTS idx_evidence_event ON evidence(event_id);
 CREATE INDEX IF NOT EXISTS idx_evidence_source ON evidence(source_id);
+CREATE INDEX IF NOT EXISTS idx_source_items_collected ON source_items(collected_at);
+CREATE INDEX IF NOT EXISTS idx_source_items_source ON source_items(source_id);
 """
 
 

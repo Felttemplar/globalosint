@@ -29,6 +29,7 @@ def summary() -> dict:
             "investigating": _query_one(db, "SELECT COUNT(*) FROM events WHERE status='investigating'"),
             "recent_events": _query_one(db, "SELECT COUNT(*) FROM events WHERE date(created_at) >= ?", (start.isoformat(),)),
             "confirmed": _query_one(db, "SELECT COUNT(*) FROM events WHERE status='confirmed'"),
+            "source_items": _query_one(db, "SELECT COUNT(*) FROM source_items"),
         }
         axis_rows = db.execute("SELECT axis, COUNT(*) n FROM events GROUP BY axis").fetchall()
         day_rows = db.execute(
@@ -41,6 +42,12 @@ def summary() -> dict:
         latest_sources = db.execute(
             "SELECT id,name,kind,status,reliability_score,updated_at FROM sources ORDER BY updated_at DESC LIMIT 5"
         ).fetchall()
+        latest_items = db.execute(
+            """SELECT source_items.id,source_items.title,source_items.url,source_items.published_at,
+               source_items.collected_at,source_items.review_status,sources.name source_name
+               FROM source_items JOIN sources ON sources.id=source_items.source_id
+               ORDER BY source_items.collected_at DESC LIMIT 6"""
+        ).fetchall()
     axis_counts = {row["axis"]: row["n"] for row in axis_rows}
     day_counts = {row["day"]: row["n"] for row in day_rows}
     days = []
@@ -52,6 +59,7 @@ def summary() -> dict:
         "axes": [{"key": key, "label": label, "count": axis_counts.get(key, 0)} for key, label in AXES.items()],
         "timeline": days, "latest_run": dict(latest_run) if latest_run else None,
         "latest_sources": [dict(row) for row in latest_sources],
+        "latest_items": [dict(row) for row in latest_items],
     }
 
 
